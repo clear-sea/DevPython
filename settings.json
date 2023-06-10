@@ -1,0 +1,9 @@
+{
+    "text":{
+        "text-font":"Console",
+        "text-size":12
+    },
+    "Python":{
+        "path":"python"
+    }
+}
