@@ -55,7 +55,7 @@ def saveFile():
 
 def showAbout():
     # 显示关于信息
-    Messagebox.show_info("关于DevPython\n作者：清澈的海水\n使用ttkbootstrap写界面","关于")
+    Messagebox.show_info("关于DevPython\n作者：清澈的海水\n使用ttkbootstrap写界面\nGitHub项目地址:https://github.com/clear-sea/DevPython","关于")
 
 def showHelp():
     # 显示帮助信息
