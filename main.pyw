@@ -54,8 +54,10 @@ def saveasFile():
 
     if isFile_Opening:
         fileName=fd.asksaveasfilename(title="另存为")
-        editor.writeFile(fileName)
-        mainWindow.title(fileName+" -"+title)
+
+        if fileName!="":
+            editor.writeFile(fileName)
+            mainWindow.title(fileName+" -"+title)
     else:
         Messagebox.show_error("当前没有打开文件","错误")
 
@@ -106,8 +108,8 @@ def showAbout():
         document.insert(tk.INSERT,"相当于Python3自带的IDEA++\n","p")
         document.insert(tk.INSERT,"关于\n","title")
         document.insert(tk.INSERT,"作者：清澈的海水\n使用tkinter和ttkbootstrap写界面\n","p")
+        document.setLink("https://github.com/clear-sea/DevPython")
         document.insert(tk.INSERT,"GitHub项目地址","link")
-        document.links.append("https://github.com/clear-sea/DevPython")
 
         document.pack(fill="both",expand=True)
         document.config(state="disabled")
