@@ -17,7 +17,10 @@ class Editor:
         self.height=height
         # 带有滚动条的文本框
         self.text=ttk.ScrolledText(parent,font=self.font,width=self.width,height=self.height,undo=True)
-        self.text.pack(fill=tk.X,anchor=tk.NW)
+        self.text.pack(fill=tk.X,anchor=tk.NW,side=tk.TOP)
+
+        # 文本内容
+        self.context=self.text.get("1.0",tk.END)
 
         # 绑定弹出菜单的操作
         self.popupMenu=ttk.Menu(self.text,tearoff=False)
@@ -83,6 +86,14 @@ class Editor:
     def popup(self,event):
         self.popupMenu.post(event.x_root,event.y_root)
 
+    def haveChanged(self):
+        newContext=self.text.get(1.0,tk.END)
+        if newContext!=self.context:
+            self.context=newContext
+            return True
+        else:
+            return False
+
 class Shell:
     def __init__(self,parent,width,height=200):
         self.parent=parent
@@ -90,10 +101,11 @@ class Shell:
         self.height=height
 
         self.shell=tk.Text(self.parent,bg="black",fg="white",height=150)
-        self.shell.pack(fill=tk.X,expand=True)
+        self.shell.pack(fill=tk.X,expand=True,side=tk.BOTTOM)
         self.shell.bind("<Return>",self.execute(self.shell.get(tk.INSERT,tk.END)))
 
     def execute(self,cmd):
         self.shell.insert(tk.INSERT,cmd+'\n')
         result=os.popen(cmd)
         self.shell.insert(tk.INSERT,result.read()+'\n')
+        result.close()

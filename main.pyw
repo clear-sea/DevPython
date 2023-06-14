@@ -5,7 +5,7 @@ from ttkbootstrap.dialogs import Messagebox
 from tkinter import filedialog as fd
 import sys,os
 import Widgets
-import docWidgets as doc
+import doc
 
 isFile_Opening=False # 记录是否有文件被打开
 isFile_Saved=True # 记录文件是否保存
@@ -20,23 +20,28 @@ mainWindow=mainFont=mainFrame=None
 
 def newFile():
     # 创建新文件
-    global isFile_Opening,isFile_Saved,editor
+    global isFile_Opening,isFile_Saved,editor,shell
 
     isFile_Saved=False
     isFile_Opening=True
 
-    editor.text.pack(fill=tk.BOTH,anchor=tk.NW)
+    editor.text.pack(fill=tk.X,anchor=tk.NW,side=tk.TOP)
+    shell.shell.pack(fill=tk.X,expand=True,side=tk.BOTTOM)
 
 def openFile():
     # 打开文件
-    global editor,fileName
+    global editor,fileName,editor,isFile_Opening
     fileName=fd.askopenfilename(title="打开文件")
 
     if fileName!="": # 如果文件名不为空
+        isFile_Opening=True
+
         mainWindow.title(fileName+" -"+title)
         #context
         editor.readFile(fileName)
-        editor.text.pack(fill=tk.BOTH,anchor=tk.NW)
+        editor.text.pack(fill=tk.X,anchor=tk.NW,side=tk.TOP)
+        # shell
+        shell.shell.pack(fill=tk.X,expand=True,side=tk.BOTTOM)
 
 def openDir():
     # 打开目录
@@ -66,13 +71,15 @@ def saveFile():
 
 def closeFile():
     #关闭当前文本框
-    global editor,isFile_Opening
+    global editor,isFile_Opening,shell
 
     if isFile_Opening:
         isFile_Opening=False
         # 删除文本框内容并隐藏它
         editor.text.delete(tk.INSERT,tk.END)
         editor.text.pack_forget()
+        # 隐藏shell
+        shell.shell.pack_forget()
     else:
         Messagebox.show_error("当前没有打开文件","错误")
 
@@ -93,11 +100,17 @@ def showAbout():
         window.title("关于")
 
         window.protocol("WM_DELETE_WINDOW",on_close)
-        doc.Title(window,1,"DevPython")
-        doc.Paragraph(window,"相当于Python3自带的IDEA++\n")
-        doc.Title(window,1,"作者")
-        doc.Paragraph(window,"\n作者：清澈的海水\n使用tkinter和ttkbootstrap写界面")
-        doc.Link(window,"https://github.com/clear-sea/DevPython","GitHub项目地址")
+
+        document=doc.Document(window)
+        document.insert(tk.INSERT,"DevPython\n","title")
+        document.insert(tk.INSERT,"相当于Python3自带的IDEA++\n","p")
+        document.insert(tk.INSERT,"关于\n","title")
+        document.insert(tk.INSERT,"作者：清澈的海水\n使用tkinter和ttkbootstrap写界面\n","p")
+        document.insert(tk.INSERT,"GitHub项目地址","link")
+        document.links.append("https://github.com/clear-sea/DevPython")
+
+        document.pack(fill="both",expand=True)
+        document.config(state="disabled")
 
 def showHelp():
     # 显示帮助信息
@@ -115,20 +128,42 @@ def showHelp():
 
         window.protocol("WM_DELETE_WINDOW",on_close)
 
-        doc.Title(window,1,"快捷键")
-        doc.Paragraph(window,"Ctrl+N:新建文件\nCtrl+S:保存文件\nCtrl+Shift+S:文件另存为\n")
+        docunment=doc.Document(window)
+        docunment.insert(tk.INSERT,"快捷键\n","title")
+        docunment.insert(tk.INSERT,"Ctrl+N:新建文件\nCtrl+S:保存文件\nCtrl+Shift+N:打开新窗口\nCtrl+Shift+S:文件另存为\nCtrl+O:打开文件\nF11:运行代码文件\n","p")
+
+        docunment.pack(fill=tk.BOTH,expand=True)
+        docunment.config(state="disabled")
 
 def showSetting():
     pass
 
 def run():
+    # 运行文件
+    global editor,fileName
+
+    editor.writeFile(fileName) # 先保存文件
     result=os.popen("python "+fileName)
     print(result.read())
     result.close()
 
 def debug():
+    # 调试
     pass
 
+def startNewWindow():
+    # 启动新窗口
+    ext=os.path.splitext(__file__)[-1]
+    if ext==".pyw":
+        os.system("python "+__file__) # 如果是以python源代码文件运行
+    else:
+        os.system("start "+__file__) # 如果打包成了可执行程序
+
+def changeTitle(event):
+    # 如果文件被更改，在窗口标题前加上"·"
+    global mainWindow,editor,fileName
+    if editor.haveChanged():
+        mainWindow.title("·"+fileName+" -"+title)
 # main
 # 读取配置
 with open("settings.json","r",encoding="utf-8") as setting_file:
@@ -161,6 +196,8 @@ fileMenu.add_separator()
 fileMenu.add_command(label="保存",command=saveFile,accelerator="Ctrl+S")
 fileMenu.add_command(label="另存为",command=saveasFile,accelerator="Ctrl+Shift+S")
 fileMenu.add_separator()
+fileMenu.add_command(label="打开新窗口",command=startNewWindow,accelerator="Ctrl+Shift+N")
+fileMenu.add_separator()
 fileMenu.add_command(label="关闭文件",command=closeFile)
 fileMenu.add_command(label="退出",command=quit)
 # 运行菜单
@@ -176,28 +213,31 @@ otherMenu.add_command(label="帮助",command=showHelp)
 otherMenu.add_separator()
 otherMenu.add_command(label="关于",command=showAbout)
 # 主菜单
-mainMenuBar.add_cascade(label="文件",menu=fileMenu)
-mainMenuBar.add_cascade(label="运行",menu=runMenu)
-mainMenuBar.add_cascade(label="其他",menu=otherMenu)
+mainMenuBar.add_cascade(label="文件(F)",menu=fileMenu)
+mainMenuBar.add_cascade(label="运行(R)",menu=runMenu)
+mainMenuBar.add_cascade(label="其他(O)",menu=otherMenu)
 
 mainWindow.config(menu=mainMenuBar)
 
-#Main frame area
+#主框
 mainFrame=ttk.Frame(mainWindow,width=Width,height=Height)
 mainFrame.pack(anchor=tk.NW,fill=tk.BOTH)
 # 文本编辑框
 editor=Widgets.Editor(mainFrame,mainFont,Width)
 editor.text.pack_forget()
-# shell shell=Widgets.Shell(mainFrame,Width)
+# shell
+shell=Widgets.Shell(mainFrame,Width)
+shell.shell.pack_forget()
 
 # 绑定快捷键
 editor.text.bind("<Control-KeyPress-s>",lambda event:editor.writeFile(fileName))
 editor.text.bind("<Control-KeyPress-S>",lambda event:saveasFile())
 editor.text.bind("<F11>",lambda event:run())
-# editor.text.bind("<Key>",lambda event:mainWindow.title("*"+fileName+"- "+title))
+editor.text.bind("<Key>",changeTitle) # 如果文件被更改，在窗口标题前加上"·"
 
 mainWindow.bind("<Control-KeyPress-o>",lambda event:openFile())
 mainWindow.bind("<Control-KeyPress-n>",lambda event:newFile())
+mainWindow.bind("<Control-KeyPress-N>",lambda event:startNewWindow())
 # 终端参数
 if len(sys.argv)>1:
     isFile_Opening=True
