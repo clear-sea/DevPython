@@ -1,4 +1,4 @@
-from ttkbootstrap import ScrolledText
+from ttkbootstrap.scrolled import ScrolledText
 import webbrowser
 
 titleFont=("微软雅黑",20,"bold") # 标题字体
@@ -6,7 +6,7 @@ pFont=("微软雅黑",10) # 段落字体
 linkFont=("微软雅黑",10,"underline") # 超链接字体
 
 class Document(ScrolledText):
-    def __init__(self, parent,linksOnClick=None) -> None:
+    def __init__(self, parent) -> None:
         super().__init__(parent)
 
         self.link=""

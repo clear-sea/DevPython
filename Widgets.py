@@ -1,6 +1,7 @@
 '''这个文件定义了编辑器内用到的控件:Editor和Shell'''
 import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.scrolled import ScrolledText
 import tkinter as tk
 # 导入以下两个模块用于语法高亮
 import idlelib.colorizer as idc
@@ -16,7 +17,7 @@ class Editor:
         self.width=width
         self.height=height
         # 带有滚动条的文本框
-        self.text=ttk.ScrolledText(parent,font=self.font,width=self.width,height=self.height,undo=True)
+        self.text=ScrolledText(parent,font=self.font,width=self.width,height=self.height,undo=True,autohide=True)
         self.text.pack(fill=tk.X,anchor=tk.NW,side=tk.TOP)
 
         # 文本内容

@@ -6,6 +6,7 @@ from tkinter import filedialog as fd
 import sys,os
 import Widgets
 import doc
+import windnd
 
 isFile_Opening=False # 记录是否有文件被打开
 isFile_Saved=True # 记录文件是否保存
@@ -18,6 +19,9 @@ title="DevPython" # 窗口默认标题
 
 mainWindow=mainFont=mainFrame=None
 
+'''
+一下一堆关于文件操作的函数
+'''
 def newFile():
     # 创建新文件
     global isFile_Opening,isFile_Saved,editor,shell
@@ -66,8 +70,9 @@ def saveFile():
     global editor,fileName,isFile_Opening
 
     if isFile_Opening:
-        editor.writeFile(fileName)
-        mainWindow.title(fileName+" -"+title)
+        if fileName!="":
+            editor.writeFile(fileName)
+            mainWindow.title(fileName+" -"+title)
     else:
         Messagebox.show_error("当前没有打开文件","错误")
 
@@ -85,7 +90,9 @@ def closeFile():
     else:
         Messagebox.show_error("当前没有打开文件","错误")
 
-
+'''
+一下一堆函数是关于其他功能的
+'''
 def showAbout():
     # 显示关于信息
     global mainWindow,isAboutWindow_opening
@@ -175,7 +182,9 @@ mainFont=(settings["text"]["text-font"],settings["text"]["text-size"]) # font
 # 创建主窗口
 Width,Height=800,600
 
-mainWindow=ttk.Window(title=title,size=(Width,Height))
+mainStyle=ttk.Style("darkly")
+mainWindow=mainStyle.master
+mainWindow.title(title)
 mainWindow.iconbitmap("images/icon.ico")
 
 screenWidth=mainWindow.winfo_screenwidth() # screen width
@@ -184,7 +193,7 @@ screenHeight=mainWindow.winfo_screenheight() # screen height
 posX=int((screenWidth-Width)/2)
 posY=int((screenHeight-Height)/2)
 
-mainWindow.geometry(f"+{posX}+{posY}")
+mainWindow.geometry(f"{Width}x{Height}+{posX}+{posY}")
 # 菜单
 mainMenuBar=ttk.Menu(mainWindow) # 主菜单
 # 文件菜单
@@ -240,12 +249,15 @@ editor.text.bind("<Key>",changeTitle) # 如果文件被更改，在窗口标题�
 mainWindow.bind("<Control-KeyPress-o>",lambda event:openFile())
 mainWindow.bind("<Control-KeyPress-n>",lambda event:newFile())
 mainWindow.bind("<Control-KeyPress-N>",lambda event:startNewWindow())
-# 终端参数
+# 终端参数打开文件
 if len(sys.argv)>1:
     isFile_Opening=True
     #context
     editor.readFile(sys.argv[1])
     editor.text.pack(fill=tk.BOTH,anchor=tk.NW)
+
+# 拖放打开文件
+windnd.hook_dropfiles(mainFrame,func=lambda fileName:exec("isFile_Opening=True\neditor.readFile(fileName[0].decode())\neditor.text.pack(fill=tk.BOTH,anchor=tk.NW)"))
 
 #mainloop
 mainWindow.mainloop()
