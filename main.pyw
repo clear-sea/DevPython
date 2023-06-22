@@ -265,10 +265,8 @@ if __name__=="__main__":
     mainFrame.pack(anchor=tk.NW,fill=tk.BOTH)
     # 文本编辑框
     editor=Widgets.Editor(mainFrame,mainFont,Width)
-    editor.text.pack_forget()
     # shell
     shell=Widgets.Shell(mainFrame,Width)
-    shell.shell.pack_forget()
 
     # 绑定快捷键
     editor.text.bind("<Control-KeyPress-s>",lambda event:saveFile())
